@@ -1,44 +1,43 @@
-const API = {
-  async getLastWorkout() {
-    let res;
-    try {
-      res = await fetch("/api/workouts");
-    } catch (err) {
-      console.log(err)
-    }
-    const json = await res.json();
+const router = require("express").Router();
+const Workout = require("../models").Workout;
 
-    return json[json.length - 1];
-  },
-  async addExercise(data) {
-    const id = location.search.split("=")[1];
+router.get("/api/workouts", (req, res) => {
+  Workout.find()
+    .then(workouts => res.json(workouts))
+    .catch(err => res.json(err));
+});
 
-    const res = await fetch("/api/workouts/" + id, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
+router.put("/api/workouts/:id", (req, res) => {
+  Workout.findByIdAndUpdate(
+    req.params.id,
+    { $push: { exercises: req.body } },
+    { new: true }
+  )
+    .then(workout => res.json(workout))
+    .catch(err => res.json(err));
+});
 
-    const json = await res.json();
+router.post("/api/workouts", (req, res) => {
+  Workout.create({
+    day: Date.now()
+  })
+    .then(newWorkout => {
+      console.log("o am the cretead worrkout: ", newWorkout);
+      res.json(newWorkout);
+    })
+    .catch(err => res.json(err));
+});
 
-    return json;
-  },
-  async createWorkout(data = {}) {
-    const res = await fetch("/api/workouts", {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: { "Content-Type": "application/json" }
-    });
+router.get("/api/workouts/range", (req, res) => {
+  Workout.find({})
+    .then(workouts => {
+      res.json(workouts);
+    })
+    .catch(err => res.json(err));
+});
 
-    const json = await res.json();
+router.delete("/api/workouts", (req, res) => {
 
-    return json;
-  },
+});
 
-  async getWorkoutsInRange() {
-    const res = await fetch(`/api/workouts/range`);
-    const json = await res.json();
-
-    return json;
-  },
-};
+module.exports = router;
